@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model address {
+  id         Int     @id @default(autoincrement())
+  userid     Int?
+  houseNO    String? @db.VarChar(225)
+  streetName String? @db.VarChar(255)
+  areaName   String? @db.VarChar(255)
+  landmark   String? @db.VarChar(255)
+  city       String? @db.VarChar(255)
+  district   String? @db.VarChar(255)
+  state      String? @db.VarChar(255)
+  country    String? @db.VarChar(255)
+  pincode    String? @db.VarChar(255)
+  users      users?  @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "address_ibfk_1")
+
+  @@index([userid], map: "userid")
+}
+
+model cart {
+  cartID   Int    @id @default(autoincrement())
+  userid   Int?
+  itemid   Int?
+  quantity Int?
+  users    users? @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "cart_ibfk_1")
+
+  @@index([itemid], map: "itemid")
+  @@index([userid], map: "userid")
+}
+
+model categories {
+  id           Int         @id @default(autoincrement())
+  categoryName String?     @db.VarChar(255)
+  restaurantID Int?
+  restaurant   restaurant? @relation(fields: [restaurantID], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "categories_ibfk_1")
+  items        items[]
+
+  @@index([restaurantID], map: "restaurantID")
+}
+
+model cities {
+  id         Int          @id @default(autoincrement())
+  cityName   String?      @db.VarChar(255)
+  stateid    Int?
+  states     states?      @relation(fields: [stateid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "cities_ibfk_1")
+  restaurant restaurant[]
+
+  @@index([stateid], map: "stateid")
+}
+
+model foodType {
+  id    Int     @id @default(autoincrement())
+  type  String? @db.VarChar(20)
+  items items[]
+}
+
+model items {
+  id           Int         @id @default(autoincrement())
+  itemName     String?     @db.VarChar(255)
+  price        Int?
+  categoryID   Int?
+  restaurantID Int?
+  foodTypeID   Int?
+  categories   categories? @relation(fields: [categoryID], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "items_ibfk_1")
+  restaurant   restaurant? @relation(fields: [restaurantID], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "items_ibfk_2")
+  foodType     foodType?   @relation(fields: [foodTypeID], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "items_ibfk_3")
+
+  @@index([categoryID], map: "categoryID")
+  @@index([foodTypeID], map: "foodTypeID")
+  @@index([restaurantID], map: "restaurantID")
+}
+
+model loginDetails {
+  id      Int     @id @default(autoincrement())
+  userid  Int?
+  status  String? @db.VarChar(255)
+  loginIP String? @db.VarChar(255)
+  users   users?  @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "loginDetails_ibfk_1")
+
+  @@index([userid], map: "userid")
+}
+
+model orderItems {
+  id        Int    @id @default(autoincrement())
+  orderID   Int?
+  userID    Int?
+  itemID    Int?
+  quantity  Int?
+  itemPrice Int?
+  users     users? @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orderItems_ibfk_1")
+
+  @@index([itemID], map: "itemID")
+  @@index([userID], map: "userID")
+}
+
+model orders {
+  orderID     Int       @id @default(autoincrement())
+  userID      Int?
+  OrderDate   DateTime? @default(now()) @db.Timestamp(0)
+  totalAmount Int?
+  users       users?    @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_ibfk_1")
+
+  @@index([userID], map: "userID")
+}
+
+model restaurant {
+  id             Int          @id @default(autoincrement())
+  restaurantName String?      @db.VarChar(255)
+  ownerName      String?      @db.VarChar(255)
+  email          String?      @db.VarChar(255)
+  password       String?      @db.VarChar(255)
+  phone          String?      @db.VarChar(255)
+  fssaiId        String?      @db.VarChar(255)
+  cityID         Int?
+  stateID        Int?
+  categories     categories[]
+  items          items[]
+  cities         cities?      @relation(fields: [cityID], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "restaurant_ibfk_1")
+  states         states?      @relation(fields: [stateID], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "restaurant_ibfk_2")
+
+  @@index([cityID], map: "cityID")
+  @@index([stateID], map: "stateID")
+}
+
+model sessions {
+  session_id String  @id @db.VarChar(128)
+  expires    Int     @db.UnsignedInt
+  data       String? @db.MediumText
+}
+
+model states {
+  id         Int          @id @default(autoincrement())
+  stateName  String?      @db.VarChar(255)
+  cities     cities[]
+  restaurant restaurant[]
+}
+
+model users {
+  id           Int            @id @default(autoincrement())
+  name         String?        @db.VarChar(255)
+  username     String?        @db.VarChar(255)
+  password     String?        @db.VarChar(255)
+  email        String?        @db.VarChar(255)
+  phone        String?        @db.VarChar(255)
+  address      address[]
+  cart         cart[]
+  loginDetails loginDetails[]
+  orderItems   orderItems[]
+  orders       orders[]
+}
