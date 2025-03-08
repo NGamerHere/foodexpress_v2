@@ -1,15 +1,24 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import jwt from "jsonwebtoken";
+import { jwtVerify } from "jose";
 
 const SECRET_KEY = process.env.JWT_SECRET || "mysecret";
 
 export const config = {
-    matcher: ["/api/dashboard/:path*","/api/dashboard"],
-    runtime: "nodejs",
+    matcher: ["/api/dashboard/:path*", "/api/dashboard"],
+    runtime: "edge",
 };
 
-export function middleware(req: NextRequest) {
+async function verifyToken(token: string) {
+    try {
+        const secret = new TextEncoder().encode(SECRET_KEY);
+        return await jwtVerify(token, secret);
+    } catch (error) {
+        return null;
+    }
+}
+
+export async function middleware(req: NextRequest) {
     const pathname = req.nextUrl.pathname;
 
     if (pathname.startsWith("/api/dashboard")) {
@@ -22,11 +31,11 @@ export function middleware(req: NextRequest) {
             );
         }
 
-        try {
-            jwt.verify(token.value, SECRET_KEY);
-        } catch (error) {
+        const isValid = await verifyToken(token.value);
+
+        if (!isValid) {
             return NextResponse.json(
-                { message: "Forbidden: Token expired" },
+                { message: "Forbidden: Token expired or invalid" },
                 { status: 403 }
             );
         }
