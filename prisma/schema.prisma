@@ -129,12 +129,6 @@ model restaurant {
   @@index([stateID], map: "stateID")
 }
 
-model sessions {
-  session_id String  @id @db.VarChar(128)
-  expires    Int     @db.UnsignedInt
-  data       String? @db.MediumText
-}
-
 model states {
   id         Int          @id @default(autoincrement())
   stateName  String?      @db.VarChar(255)
