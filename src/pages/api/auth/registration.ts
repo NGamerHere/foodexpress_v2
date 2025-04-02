@@ -21,7 +21,7 @@ export default async function handleRequest(req: NextApiRequest, res: NextApiRes
         const hashedPassword:string = await bcrypt.hash(password, 10);
 
         if(!previousDetailsCheck) {
-           const newUserDetails = await prisma.users.create({
+            await prisma.users.create({
                data: {
                    username: username,
                    password:hashedPassword,
@@ -30,7 +30,7 @@ export default async function handleRequest(req: NextApiRequest, res: NextApiRes
                    name: name
                }
            });
-           res.status(201).json(newUserDetails);
+           res.status(201).json({message: "User created successfully."});
         }else {
             res.status(400).send({error: "User already exists"});
         }
